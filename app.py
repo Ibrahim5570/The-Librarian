@@ -1,12 +1,9 @@
 import streamlit as st
 import pandas as pd
 import warnings
-from dotenv import load_dotenv
 import os
+hf_token = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
 
-load_dotenv()
-
-hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 # --- SILENCE THE NOISE ---
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
