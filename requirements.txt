@@ -1,0 +1,9 @@
+streamlit
+pandas
+langchain
+langchain-community
+langchain-core
+langchain-huggingface
+faiss-cpu
+sentence-transformers
+huggingface-hub
