@@ -1,7 +1,9 @@
 import warnings
 import os
-from dotenv import load_dotenv
-load_dotenv()
+import streamlit as st
+hf_key = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+ls_key = st.secrets["LANGCHAIN_API_KEY"]
+
 # 1. Silence TensorFlow logs (0 = all, 1 = no info, 2 = no warning, 3 = no errors)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -14,9 +16,9 @@ from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 
 # 1. Setup Environment
 # ---------------------------------------------------------
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = hf_key
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+os.environ["LANGCHAIN_API_KEY"] = ls_key
 os.environ["LANGCHAIN_PROJECT"] = "BookRecommenderBot"
 
 from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEmbeddings
