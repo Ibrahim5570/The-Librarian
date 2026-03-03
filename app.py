@@ -18,7 +18,7 @@ from langchain_core.documents import Document
 
 # --- PAGE SETUP ---
 st.set_page_config(page_title="The Librarian", page_icon="📖", layout="wide")
-st.title("📖 The Librarian")
+st.title("The Librarian")
 st.markdown("---")
 
 
