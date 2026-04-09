@@ -14,16 +14,14 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# 2. Environment Setup (Using Streamlit Secrets)
+# 2. Environment Setup
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = st.secrets["LANGCHAIN_API_KEY"]
-os.environ["LANGCHAIN_PROJECT"] = "BookRecommenderBot"
 
-# 3. Cached Initializers 
-# We use @st.cache_resource so the DB and Model don't reload on every interaction
+
+# 3. Cached Initializers
 @st.cache_resource
 def get_retriever():
+    # This represents your local "trusted" database
     books = [
         {"title": "Project Hail Mary",
          "desc": "A lone astronaut must save the earth from disaster using science and a spider-like alien friend."},
@@ -39,7 +37,8 @@ def get_retriever():
     docs = [Document(page_content=f"Title: {b['title']}\nDescription: {b['desc']}") for b in books]
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = FAISS.from_documents(docs, embeddings)
-    return vectorstore.as_retriever(search_kwargs={"k": 3})
+    return vectorstore.as_retriever(search_kwargs={"k": 2})  # Reduced k to reduce noise
+
 
 @st.cache_resource
 def get_llm():
@@ -47,29 +46,35 @@ def get_llm():
     llm = HuggingFaceEndpoint(
         repo_id=repo_id,
         max_new_tokens=512,
-        temperature=0.1,
+        temperature=0.4,  # Slightly higher for better conversational flow
     )
     return ChatHuggingFace(llm=llm)
+
 
 # 4. Main Application logic
 def main():
     st.set_page_config(page_title="Book Librarian", page_icon="📚")
     st.title("📚 AI Book Librarian")
-    st.markdown("I can recommend books from my database. What are you looking for?")
+    st.markdown("I am an expert librarian. I can help you with my local collection or general book inquiries.")
 
     # --- Memory Setup ---
-    # This automatically persists messages in st.session_state["chat_messages"]
     msgs = StreamlitChatMessageHistory(key="chat_messages")
-    
+
     # Initialize components
     retriever = get_retriever()
     llm = get_llm()
 
-    # Prompt Template
+    # --- UPDATED PROMPT TEMPLATE ---
     template = """You are a helpful expert book librarian. 
-    Answer the user's request based ONLY on the following context.
 
-    CONTEXT:
+    DIRECTIONS:
+    1. If the user asks about a book found in the CONTEXT, prioritize that information.
+    2. If the user asks about a book NOT in the context (like 'Credence'), use your general knowledge to provide an accurate description.
+    3. If the user asks for a content advisory or mentions "mature content/smut," provide an honest assessment of the book's themes. 
+    4. Do not recommend children's books as substitutes for adult-themed inquiries.
+    5. Use the CHAT HISTORY to stay on track with the conversation.
+
+    CONTEXT FROM COLLECTION:
     {context}
 
     CHAT HISTORY:
@@ -79,42 +84,37 @@ def main():
     """
     prompt = ChatPromptTemplate.from_template(template)
 
-    # Helper function for history formatting
     def get_history_string(_):
-        # Retrieve the last 6 messages from Streamlit history
         return "\n".join([f"{m.type}: {m.content}" for m in msgs.messages[-6:]])
 
     # RAG Pipeline
     chain = (
-        {
-            "context": lambda x: "\n\n".join([d.page_content for d in retriever.invoke(x["question"])]),
-            "history": get_history_string,
-            "question": lambda x: x["question"]
-        }
-        | prompt
-        | llm
-        | StrOutputParser()
+            {
+                "context": lambda x: "\n\n".join([d.page_content for d in retriever.invoke(x["question"])]),
+                "history": get_history_string,
+                "question": lambda x: x["question"]
+            }
+            | prompt
+            | llm
+            | StrOutputParser()
     )
 
     # --- Chat Interface ---
-    # Display message history on rerun
     for msg in msgs.messages:
         st.chat_message(msg.type).write(msg.content)
 
-    # Handle User Input
     if user_query := st.chat_input("Ask me about a book..."):
-        # 1. Display User Message
         st.chat_message("human").write(user_query)
-        
-        # 2. Run the Chain
+
         with st.chat_message("ai"):
             with st.spinner("Searching the library..."):
                 response = chain.invoke({"question": user_query})
                 st.write(response)
-        
-        # 3. Update Memory
+
+        # Update Memory
         msgs.add_user_message(user_query)
         msgs.add_ai_message(response)
+
 
 if __name__ == "__main__":
     main()
