@@ -2,3 +2,18 @@
 .idea/
 __pycache__/
 venv_/
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Streamlit Secrets & Config
+.streamlit/
+
+# Python Cache (Optional but recommended)
+__pycache__/
+*.pyc
+
+# Environment variables (If you ever use a .env file instead of secrets)
+.env
