@@ -12,7 +12,8 @@ warnings.filterwarnings("ignore")
 if "torchvision" not in sys.modules:
     sys.modules["torchvision"] = None
 
-from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint, HuggingFaceEmbeddings
+from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -20,6 +21,7 @@ from langchain_core.documents import Document
 
 # --- SECRETS SETUP ---
 hf_token = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+groq_api_key = st.secrets["GROQ_API_KEY"]
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = hf_token
 
 # --- PAGE SETUP ---
@@ -45,13 +47,11 @@ def init_bot():
     vectorstore = FAISS.from_documents(docs, embeddings)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-    llm_engine = HuggingFaceEndpoint(
-        repo_id="meta-llama/Llama-3.1-8B-Instruct",
-        max_new_tokens=1024,
-        temperature=0.1,  # Keep it extremely factual and low-creativity
-        huggingfacehub_api_token=hf_token
+    llm = ChatGroq(
+        model="llama-3.3-70b-versatile",  # was llama-3.1-8b-instant
+        temperature=0.1,
+        api_key=groq_api_key
     )
-    llm = ChatHuggingFace(llm=llm_engine)
 
     return retriever, llm
 
@@ -99,7 +99,7 @@ if prompt_input := st.chat_input("What can I help you with?..."):
     - You are an expert in content ratings. 
     - You do NOT sugarcoat. If a book contains graphic sexual violence, stalking, or "dark romance" tropes, you MUST state this clearly to the parent.
     - You are a tool for parental informed consent.
-    
+
     CULTURAL CONTEXT:
     - If the user's cultural background is not yet clear from the CHAT HISTORY, ask politely about their preferences/origins to ensure appropriate guidance. 
     - If the user speaks in Romanized Urdu, respond helpfully but avoid repetitive phrases like "Main samajh gaya".
@@ -136,8 +136,11 @@ if prompt_input := st.chat_input("What can I help you with?..."):
                 full_response = f"{response}{links_text}" if found_local_match else response
                 st.markdown(full_response)
 
-                st.session_state.messages.append({"role": "user", "content": prompt_input})
-                st.session_state.messages.append({"role": "assistant", "content": full_response})
             except Exception as e:
                 st.error(
                     "The safety filter was triggered. This usually happens when discussing extremely dark themes. Try rephrasing to ask specifically for a 'content rating' or 'trigger warnings'.")
+
+    # --- Append messages OUTSIDE the chat bubble block ---
+    st.session_state.messages.append({"role": "user", "content": prompt_input})
+    st.session_state.messages.append(
+        {"role": "assistant", "content": full_response if 'full_response' in locals() else ""})
