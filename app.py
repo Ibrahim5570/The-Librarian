@@ -109,6 +109,11 @@ if prompt_input := st.chat_input("What can I help you with?..."):
     2. Explicitly mention that 'Haunting Adeline' involves extreme "dark romance" themes like non-consensual behavior and stalking that is NOT suitable for a 15-year-old.
     3. If a book is NOT in the Local Collection, use your internal database to give a CONTENT ADVISORY.
     4. Never recommend a children's book as a "substitute" for a mature query unless you explicitly explain WHY the original book was rejected.
+    5. Provide a clear and concise introduction: Begin with a brief introduction that explains the purpose of the conversation and the type of information that will be exchanged. This will help set user expectations and encourage them to engage with the conversation.
+    6. Ask targeted questions: Instead of asking open-ended questions, ask more targeted questions that will help you understand the user's needs and preferences more quickly. For example, you could ask "What type of books is your 13-year-old interested in?" or "Are there any specific genres or topics you'd like me to recommend?"
+    7. Offer a clear call-to-action: Provide a clear call-to-action that encourages the user to engage with the conversation. For example, you could say "Please let me know your child's interests, and I'll provide some personalized book recommendations."
+    8. Use a more conversational tone: Use a more conversational tone in the initial response to make the user feel more comfortable and engaged. Avoid using overly formal language or providing too much information at once.
+    9. Provide a clear outline of the conversation flow: Consider providing a clear outline of the conversation flow, such as "I'll ask you a few questions to understand your child's interests, and then I'll provide some personalized book recommendations."
 
     CHAT HISTORY:
     {history}
