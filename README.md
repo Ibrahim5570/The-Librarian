@@ -1,12 +1,12 @@
 # 📚 The Librarian
 
-A Streamlit-based chatbot designed to help parents make informed decisions about the books their children want to read. The Librarian provides honest, unfiltered content advisories — flagging mature themes, age-inappropriate content, and potential triggers — so parents can say yes or no with full information.
+A Streamlit-based chatbot designed to help parents make informed decisions about the books their children want to read. The Librarian provides honest, unfiltered content advisories, flagging mature themes, age-inappropriate content, and potential triggers so parents can say yes or no with full information.
 
 ---
 
 ## What It Does
 
-- Accepts a parent's question about any book (e.g. *"My 14-year-old wants to read Haunting Adeline — is it appropriate?"*)
+- Accepts a parent's question about any book (e.g. *"My 3-year-old struggles with reading and I am afraid they'll fall behind"*)
 - Searches a local curated book collection using semantic similarity (FAISS + HuggingFace Embeddings)
 - Uses a large language model (Llama 3.3 70B via Groq) to generate a honest content advisory
 - Flags 18+ content, dark romance tropes, graphic violence, non-consensual themes, and other mature material explicitly
@@ -35,7 +35,8 @@ chatbot/
 ├── app.py                  # Main application
 ├── books_data.csv          # Local book collection (Name, Author, Age, Description, Link)
 ├── .streamlit/
-│   └── secrets.toml        # API keys (never commit this)
+│  └── secrets.toml        # API keys (never commit this)
+├── README.md   
 └── requirements.txt
 ```
 
@@ -106,7 +107,7 @@ The local collection CSV must have these columns:
 
 - The bot uses conversational memory (last 6 messages) to stay aware of the child's age and the parent's concerns throughout the session
 - If a book is not in the local collection, the LLM falls back on its own training knowledge to provide a content advisory
-- The app is designed for parents — not children
+- The app is designed for parents  not children
 
 ---
 
